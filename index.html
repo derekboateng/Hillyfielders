@@ -2,344 +2,467 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Hillyfielders FC</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg: #f2f2f7; --bg2: #ffffff; --bg3: #e5e5ea;
-  --text: #1c1c1e; --text2: #8e8e93; --text3: #ffffff;
-  --accent: #5856d6; --accent2: #af52de; --green: #34c759;
-  --red: #ff3b30; --orange: #ff9500; --blue: #007aff;
-  --border: rgba(0,0,0,0.08); --shadow: 0 2px 12px rgba(0,0,0,0.08);
-  --radius: 16px; --radius-sm: 12px;
+  --black: #0a0a0a; --white: #ffffff;
+  --g1: #f5f5f5; --g2: #e8e8e8; --g3: #c0c0c0; --g4: #888; --g5: #444;
+  --rad: 12px; --rad-sm: 8px;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #000; --bg2: #1c1c1e; --bg3: #2c2c2e; --text: #fff; --text2: #8e8e93; --border: rgba(255,255,255,0.08); --shadow: 0 2px 12px rgba(0,0,0,0.4); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: var(--g1); color: var(--black); min-height: 100vh; }
+
+/* HEADER */
+.hdr { background: var(--black); color: var(--white); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 70px; position: sticky; top: 0; z-index: 100; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-name { font-size: 16px; font-weight: 800; white-space: nowrap; }
+.logo-sub { font-size: 11px; color: var(--g3); text-transform: uppercase; letter-spacing: .1em; }
+.hdr-right { display: flex; align-items: center; gap: 10px; }
+.sync-pill { font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; }
+.sync-ok { background: rgba(255,255,255,.12); color: var(--white); }
+.sync-err { background: rgba(255,80,80,.2); color: #ff9090; }
+.sync-ing { background: rgba(255,255,255,.08); color: var(--g3); }
+.spinner { width: 10px; height: 10px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; vertical-align: middle; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-hdr { background: var(--white); color: var(--black); border: none; border-radius: var(--rad-sm); padding: 8px 18px; font-size: 13px; font-weight: 800; cursor: pointer; }
+
+/* NAV */
+.nav { background: var(--white); border-bottom: 1px solid var(--g2); padding: 0 40px; display: flex; }
+.nav-tab { padding: 18px 26px; font-size: 15px; font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; color: var(--g4); transition: all .15s; }
+.nav-tab:hover { color: var(--black); }
+.nav-tab.active { color: var(--black); border-bottom-color: var(--black); }
+
+/* PAGE */
+.page { max-width: 960px; margin: 0 auto; padding: 36px 24px 80px; }
+
+/* CARDS */
+.card { background: var(--white); border-radius: var(--rad); border: 1px solid var(--g2); margin-bottom: 20px; overflow: hidden; }
+.card-body { padding: 24px 28px; }
+.card-title { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+
+/* SCOREBOARD */
+.scoreboard { background: var(--black); border-radius: var(--rad); margin-bottom: 20px; padding: 32px 28px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items: center; }
+.sb-team { display: flex; flex-direction: column; gap: 8px; }
+.sb-team.away { align-items: flex-end; }
+.sb-label { font-size: 11px; font-weight: 700; color: var(--g3); text-transform: uppercase; letter-spacing: .1em; }
+.sb-name { background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.15); border-radius: var(--rad-sm); padding: 12px 16px; color: var(--white); font-size: 14px; font-weight: 800; font-family: inherit; width: 100%; transition: border-color .15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-name:focus { outline: none; border-color: rgba(255,255,255,.6); }
+.sb-name::placeholder { color: rgba(255,255,255,.3); }
+.sb-name.away { text-align: right; }
+.sb-center { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.sb-scores { display: flex; align-items: center; gap: 10px; }
+.sb-score { width: 72px; height: 82px; background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.2); border-radius: var(--rad-sm); color: var(--white); font-size: 44px; font-weight: 900; text-align: center; font-family: inherit; -moz-appearance: textfield; transition: border-color .15s; }
+.sb-score::-webkit-inner-spin-button, .sb-score::-webkit-outer-spin-button { -webkit-appearance: none; }
+.sb-score:focus { outline: none; border-color: rgba(255,255,255,.7); }
+.sb-sep { font-size: 36px; font-weight: 900; color: rgba(255,255,255,.35); }
+.sb-result { font-size: 13px; font-weight: 800; padding: 5px 16px; border-radius: 20px; }
+.sb-result.W { background: var(--white); color: var(--black); }
+.sb-result.D { background: rgba(255,255,255,.2); color: var(--white); }
+.sb-result.L { background: rgba(255,60,60,.3); color: #ff9999; }
+.sb-result.none { color: rgba(255,255,255,.3); font-size: 12px; font-weight: 600; }
+
+/* GRIDS */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* FIELDS */
+.field { margin-bottom: 18px; }
+.field:last-child { margin-bottom: 0; }
+.flabel { display: block; font-size: 12px; font-weight: 700; color: var(--g4); margin-bottom: 7px; text-transform: uppercase; letter-spacing: .06em; }
+input[type=text], select, textarea {
+  width: 100%; padding: 14px 16px; border-radius: var(--rad-sm);
+  border: 2px solid var(--g2); background: var(--g1);
+  color: var(--black); font-size: 16px; font-family: inherit;
+  -webkit-appearance: none; transition: border-color .15s;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-.header { background: linear-gradient(160deg,#5856d6 0%,#af52de 100%); padding: 52px 20px 24px; color:#fff; position:relative; overflow:hidden; }
-.header::before { content:"⚽"; position:absolute; right:-10px; top:-10px; font-size:120px; opacity:.12; line-height:1; }
-.header-title { font-size:28px; font-weight:800; letter-spacing:-.5px; }
-.header-sub { font-size:14px; opacity:.8; margin-top:2px; font-weight:500; }
-.header-badges { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; align-items:center; }
-.badge { background:rgba(255,255,255,.2); backdrop-filter:blur(10px); border-radius:20px; padding:6px 14px; font-size:13px; font-weight:600; }
-.sync-badge { border-radius:20px; padding:6px 14px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; }
-.sync-badge.ok { background:rgba(52,199,89,.25); color:#fff; }
-.sync-badge.err { background:rgba(255,59,48,.25); color:#fff; }
-.sync-badge.syncing { background:rgba(255,255,255,.2); color:#fff; }
-.btn-csv { background:rgba(255,255,255,.25); backdrop-filter:blur(10px); border:1.5px solid rgba(255,255,255,.5); border-radius:20px; padding:6px 16px; color:#fff; font-size:13px; font-weight:700; cursor:pointer; }
-.bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(255,255,255,.85); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; padding:8px 0 max(8px,env(safe-area-inset-bottom)); z-index:100; }
-@media (prefers-color-scheme:dark) { .bottom-nav { background:rgba(28,28,30,.92); } }
-.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:4px 0; }
-.nav-icon { font-size:22px; }
-.nav-label { font-size:10px; font-weight:600; color:var(--text2); }
-.nav-item.active .nav-label { color:var(--accent); }
-.content { padding:16px 16px 100px; max-width:600px; margin:0 auto; }
-.card { background:var(--bg2); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:16px; overflow:hidden; }
-.card-body { padding:14px 18px 18px; }
-.section-title { font-size:20px; font-weight:800; margin-bottom:14px; letter-spacing:-.3px; }
-.field { margin-bottom:14px; }
-.field:last-child { margin-bottom:0; }
-.field-label { font-size:13px; font-weight:600; color:var(--text2); margin-bottom:7px; display:block; }
-input[type=text], select, textarea { width:100%; padding:14px 16px; border-radius:var(--radius-sm); border:1.5px solid var(--border); background:var(--bg); color:var(--text); font-size:16px; font-family:inherit; appearance:none; -webkit-appearance:none; transition:border-color .2s; }
-input[type=text]:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); }
-textarea { resize:vertical; min-height:90px; line-height:1.5; }
-select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238e8e93' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center; padding-right:40px; }
-.match-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-.pill { padding:9px 18px; border-radius:20px; border:2px solid var(--border); background:var(--bg2); color:var(--text2); cursor:pointer; font-size:14px; font-weight:700; }
-.pill.active { border-color:var(--accent); background:var(--accent); color:#fff; }
-.pill.add { border:2px dashed var(--accent); background:transparent; color:var(--accent); }
-.avail-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.avail-btn { padding:14px 12px; border-radius:var(--radius-sm); border:2px solid var(--border); background:var(--bg); color:var(--text2); cursor:pointer; font-weight:700; font-size:15px; text-align:left; display:flex; align-items:center; gap:10px; }
-.avail-btn.on { border-color:var(--green); background:rgba(52,199,89,.12); color:var(--green); }
-.scorer-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.scorer-row { display:flex; align-items:center; background:var(--bg); border-radius:var(--radius-sm); border:2px solid var(--border); overflow:hidden; }
-.scorer-row.has-goals { border-color:var(--accent); background:rgba(88,86,214,.06); }
-.scorer-name { flex:1; font-weight:700; font-size:14px; padding:0 12px; }
-.counter-btn { width:44px; height:52px; border:none; background:var(--bg3); color:var(--text); cursor:pointer; font-weight:800; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.counter-btn:active { background:var(--accent); color:#fff; }
-.goal-count { min-width:36px; text-align:center; font-weight:800; font-size:18px; padding:0 2px; }
-.stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
-.stat-card { background:var(--bg2); border-radius:var(--radius); padding:16px 12px; text-align:center; box-shadow:var(--shadow); }
-.stat-icon { font-size:28px; }
-.stat-val { font-size:22px; font-weight:800; margin:4px 0 2px; letter-spacing:-.5px; }
-.stat-lbl { font-size:11px; color:var(--text2); font-weight:600; }
-table { width:100%; border-collapse:collapse; font-size:15px; margin-top:14px; }
-th { padding:10px 14px; text-align:left; font-weight:700; color:var(--text2); font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
-td { padding:12px 14px; border-top:1px solid var(--border); }
-.dot { width:12px; height:12px; border-radius:50%; display:inline-block; margin-right:8px; vertical-align:middle; }
-.squad-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.squad-card { background:var(--bg); border-radius:var(--radius-sm); padding:14px; border:1.5px solid var(--border); display:flex; align-items:center; gap:12px; }
-.squad-num { color:#fff; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0; }
-.squad-name { flex:1; font-weight:700; font-size:15px; cursor:pointer; }
-.data-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-.data-card { background:var(--bg2); border-radius:var(--radius); padding:20px 16px; text-align:center; box-shadow:var(--shadow); }
-.data-card .big-icon { font-size:36px; margin-bottom:10px; }
-.data-card h4 { font-size:15px; font-weight:800; margin-bottom:6px; }
-.data-card p { font-size:12px; color:var(--text2); line-height:1.6; margin-bottom:14px; }
-.btn-primary { padding:14px; border-radius:var(--radius-sm); border:none; background:var(--accent); color:#fff; cursor:pointer; font-weight:800; font-size:15px; width:100%; }
-.btn-primary:active { opacity:.8; }
-.btn-purple { padding:14px; border-radius:var(--radius-sm); border:none; background:var(--accent2); color:#fff; cursor:pointer; font-weight:800; font-size:15px; width:100%; display:block; text-align:center; }
-.toast { margin-top:14px; padding:14px 16px; border-radius:var(--radius-sm); font-weight:700; font-size:14px; text-align:center; }
-.toast.ok { background:rgba(52,199,89,.15); color:var(--green); }
-.toast.err { background:rgba(255,59,48,.15); color:var(--red); }
-.info-card { background:var(--bg2); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); margin-bottom:12px; }
-.info-card h4 { font-size:15px; font-weight:800; margin-bottom:10px; }
-.info-card ol { padding-left:20px; font-size:14px; color:var(--text2); line-height:2; }
-.info-card p { font-size:14px; color:var(--text2); line-height:1.7; }
-.gk-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.avail-count { font-size:13px; color:var(--text2); font-weight:600; margin-bottom:10px; }
-canvas { border-radius:8px; max-height:200px; }
-.no-data { color:var(--text2); font-size:15px; padding:10px 0; }
-.spinner { display:inline-block; width:10px; height:10px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
+input[type=text]:focus, select:focus, textarea:focus { outline: none; border-color: var(--black); background: var(--white); }
+textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 42px; }
+
+/* PILLS */
+.pills { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+.pill { padding: 10px 20px; border-radius: 20px; border: 2px solid var(--g2); background: var(--white); color: var(--g4); cursor: pointer; font-size: 14px; font-weight: 700; transition: all .15s; }
+.pill:hover { border-color: var(--black); color: var(--black); }
+.pill.active { border-color: var(--black); background: var(--black); color: var(--white); }
+.pill.add { border: 2px dashed var(--g3); background: transparent; }
+.pill.add:hover { border-color: var(--black); color: var(--black); }
+
+/* AVAILABILITY */
+.avail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; }
+.avail-btn { padding: 13px 14px; border-radius: var(--rad-sm); border: 2px solid var(--g2); background: var(--g1); color: var(--g4); cursor: pointer; font-weight: 700; font-size: 14px; text-align: left; display: flex; align-items: center; gap: 10px; width: 100%; transition: all .15s; }
+.avail-btn.on { border-color: var(--black); background: var(--black); color: var(--white); }
+.avail-note { font-size: 13px; color: var(--g4); font-weight: 600; margin-bottom: 14px; }
+
+/* SCORERS */
+.scorer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 10px; }
+.scorer-row { display: flex; align-items: center; background: var(--g1); border-radius: var(--rad-sm); border: 2px solid var(--g2); overflow: hidden; transition: border-color .15s; }
+.scorer-row.on { border-color: var(--black); background: var(--white); }
+.scorer-name { flex: 1; font-weight: 700; font-size: 14px; padding: 0 12px; }
+.cbtn { width: 46px; height: 52px; border: none; background: var(--g2); color: var(--black); cursor: pointer; font-weight: 900; font-size: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .1s; }
+.cbtn:hover { background: var(--black); color: var(--white); }
+.gcount { min-width: 36px; text-align: center; font-weight: 900; font-size: 20px; }
+
+/* STAT CARDS */
+.stat-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.sc { background: var(--white); border: 1px solid var(--g2); border-radius: var(--rad); padding: 18px 14px; text-align: center; }
+.sc.dark { background: var(--black); color: var(--white); border-color: var(--black); }
+.sc-icon { font-size: 24px; margin-bottom: 6px; }
+.sc-val { font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+.sc-lbl { font-size: 11px; color: var(--g4); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+.sc.dark .sc-lbl { color: var(--g3); }
+
+/* TABLES */
+.ltable { width: 100%; border-collapse: collapse; font-size: 15px; }
+.ltable th { padding: 11px 14px; text-align: left; font-size: 12px; font-weight: 700; color: var(--g4); text-transform: uppercase; letter-spacing: .06em; border-bottom: 2px solid var(--black); }
+.ltable th.c { text-align: center; }
+.ltable td { padding: 13px 14px; border-bottom: 1px solid var(--g2); font-weight: 600; }
+.ltable td.c { text-align: center; }
+.ltable tr:last-child td { border-bottom: none; }
+.rbadge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; }
+.rbadge.W { background: var(--black); color: var(--white); }
+.rbadge.D { background: var(--g3); color: var(--white); }
+.rbadge.L { background: var(--g2); color: var(--g5); }
+.dtable { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 14px; }
+.dtable th { padding: 10px 14px; font-size: 12px; font-weight: 700; color: var(--g4); text-transform: uppercase; letter-spacing: .06em; background: var(--g1); text-align: left; }
+.dtable td { padding: 13px 14px; border-top: 1px solid var(--g2); }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+
+/* SQUAD */
+.squad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 12px; }
+.squad-card { background: var(--g1); border-radius: var(--rad-sm); padding: 15px; border: 2px solid var(--g2); display: flex; align-items: center; gap: 12px; transition: border-color .15s; }
+.squad-card:hover { border-color: var(--black); }
+.squad-num { background: var(--black); color: var(--white); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; flex-shrink: 0; }
+.squad-name { flex: 1; font-weight: 700; font-size: 15px; cursor: pointer; }
+
+/* DATA */
+.dac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.dac { background: var(--white); border: 1px solid var(--g2); border-radius: var(--rad); padding: 28px 22px; text-align: center; }
+.dac .dicon { font-size: 38px; margin-bottom: 10px; }
+.dac h4 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.dac p { font-size: 13px; color: var(--g4); line-height: 1.6; margin-bottom: 18px; }
+.btn-black { padding: 14px; border-radius: var(--rad-sm); border: none; background: var(--black); color: var(--white); cursor: pointer; font-weight: 800; font-size: 15px; width: 100%; transition: opacity .15s; }
+.btn-black:hover { opacity: .8; }
+.btn-outline { padding: 14px; border-radius: var(--rad-sm); border: 2px solid var(--black); background: transparent; color: var(--black); cursor: pointer; font-weight: 800; font-size: 15px; width: 100%; display: block; text-align: center; transition: all .15s; }
+.btn-outline:hover { background: var(--black); color: var(--white); }
+.toast { margin-top: 14px; padding: 14px 18px; border-radius: var(--rad-sm); font-weight: 700; font-size: 14px; text-align: center; }
+.toast.ok { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.toast.err { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.icard { background: var(--white); border: 1px solid var(--g2); border-radius: var(--rad); padding: 22px 26px; margin-bottom: 14px; }
+.icard h4 { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+.icard ol, .icard p { font-size: 14px; color: var(--g5); line-height: 2; padding-left: 18px; }
+.icard p { padding-left: 0; }
+canvas { max-height: 220px; }
+.nodata { color: var(--g4); font-size: 15px; padding: 16px 0; }
+
+@media (max-width: 600px) {
+  .hdr { padding: 0 16px; }
+  .nav { padding: 0 6px; }
+  .nav-tab { padding: 16px 12px; font-size: 13px; }
+  .page { padding: 20px 14px 60px; }
+  .scoreboard { grid-template-columns: 1fr; gap: 20px; padding: 24px 20px; }
+  .sb-team.away { align-items: flex-start; }
+  .sb-name.away { text-align: left; }
+  .sb-center { order: -1; }
+  .g2 { grid-template-columns: 1fr; }
+  .dac-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="root"></div>
 <script>
 const SUPABASE_URL = "https://ncsnpgibqrmrbvddijst.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc25wZ2licXJtcmJ2ZGRpanN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NDI5MTEsImV4cCI6MjA4OTUxODkxMX0.jN5BsBrmCKwDrXUzWx_kgyWiaS9sKZzYVFupyssTb9A";
-const TABLE = "tracker";
-const ROW_ID = 1;
-const LOCAL_KEY = "hillyfielders_v3";
-const COLORS = ["#5856d6","#af52de","#ff2d55","#ff9500","#ff3b30","#34c759","#007aff","#5ac8fa","#ffcc00"];
+const TABLE = "tracker", ROW_ID = 1, LOCAL_KEY = "hillyfielders_v5";
+const GRAYS = ["#0a0a0a","#333","#555","#777","#999","#aaa","#bbb","#ccc","#ddd"];
 
-let goalChart = null, gkChart = null, syncTimeout = null;
+let goalChart = null, gkChart = null, syncTimer = null;
+const DEF_PLAYERS = ["Player 1","Player 2","Player 3","Player 4","Player 5","Player 6","Player 7","Player 8","Player 9"];
 
-const defaultPlayers = ["Player 1","Player 2","Player 3","Player 4","Player 5","Player 6","Player 7","Player 8","Player 9"];
-function emptyMatch(players) {
-  return { id:Date.now()+Math.random(), opponent:"", score:"", notes:"",
-    available:players.map(p=>({name:p,present:false})),
-    goalkeepers:["",""], scorers:players.map(p=>({name:p,goals:0})) };
+function emptyMatch(pl) {
+  return { id: Date.now() + Math.random(), opponent: "", scoreUs: "", scoreThem: "", notes: "",
+    available: pl.map(n => ({ name: n, present: false })),
+    goalkeepers: ["", ""], scorers: pl.map(n => ({ name: n, goals: 0 })) };
 }
 
-let state = {
-  players:[...defaultPlayers], matches:[emptyMatch(defaultPlayers)],
-  activeMatch:0, activeTab:"matches", editingPlayer:-1, toast:"",
-  syncStatus:"syncing"
+let S = {
+  players: [...DEF_PLAYERS], matches: [emptyMatch(DEF_PLAYERS)],
+  mi: 0, tab: "matches", editP: -1, toast: "", sync: "syncing"
 };
 
-// ── Supabase helpers ──────────────────────────────────────────
-async function sbFetch(method, body) {
-  const url = `${SUPABASE_URL}/rest/v1/${TABLE}`;
-  const headers = { "Content-Type":"application/json", "apikey":SUPABASE_KEY, "Authorization":`Bearer ${SUPABASE_KEY}` };
-  if (method === "GET") {
-    const r = await fetch(`${url}?id=eq.${ROW_ID}&select=data`, { headers });
-    return r.ok ? r.json() : null;
-  }
-  if (method === "UPSERT") {
-    const r = await fetch(url, { method:"POST", headers:{ ...headers, "Prefer":"resolution=merge-duplicates" }, body:JSON.stringify([{id:ROW_ID, data:body}]) });
-    return r.ok;
-  }
-}
-
+// ── Cloud ──
 async function cloudLoad() {
   try {
-    const rows = await sbFetch("GET");
-    if (rows && rows.length && rows[0].data) {
-      const d = JSON.parse(rows[0].data);
-      state.players = d.players;
-      state.matches = d.matches;
-      saveLocal();
-      state.syncStatus = "ok";
-    } else {
-      loadLocal();
-      state.syncStatus = "ok";
+    const h = { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY };
+    const r = await fetch(SUPABASE_URL + "/rest/v1/" + TABLE + "?id=eq." + ROW_ID + "&select=data", { headers: h });
+    if (r.ok) {
+      const rows = await r.json();
+      if (rows.length && rows[0].data) {
+        const d = JSON.parse(rows[0].data);
+        S.players = d.players; S.matches = d.matches;
+        // migrate old matches missing scoreUs/scoreThem
+        S.matches.forEach(m => {
+          if (m.score !== undefined && m.scoreUs === undefined) {
+            const p = parseScore(m.score);
+            m.scoreUs = p ? String(p.us) : "";
+            m.scoreThem = p ? String(p.them) : "";
+            delete m.score;
+          }
+        });
+        saveLocal();
+      }
     }
-  } catch(e) {
-    loadLocal();
-    state.syncStatus = "err";
-  }
+    S.sync = "ok";
+  } catch(e) { loadLocal(); S.sync = "err"; }
   render();
 }
-
 async function cloudSave() {
-  state.syncStatus = "syncing"; render();
+  S.sync = "syncing"; render();
   try {
-    const payload = JSON.stringify({ players:state.players, matches:state.matches });
-    const ok = await sbFetch("UPSERT", payload);
-    state.syncStatus = ok ? "ok" : "err";
-  } catch(e) { state.syncStatus = "err"; }
+    const h = { "Content-Type": "application/json", apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, Prefer: "resolution=merge-duplicates" };
+    const body = JSON.stringify([{ id: ROW_ID, data: JSON.stringify({ players: S.players, matches: S.matches }) }]);
+    const r = await fetch(SUPABASE_URL + "/rest/v1/" + TABLE, { method: "POST", headers: h, body });
+    S.sync = r.ok ? "ok" : "err";
+  } catch(e) { S.sync = "err"; }
   render();
 }
+function debounceSave() { saveLocal(); clearTimeout(syncTimer); syncTimer = setTimeout(cloudSave, 1500); }
+function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ players: S.players, matches: S.matches })); } catch(e) {} }
+function loadLocal() { try { const d = JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}"); if (d.players) S.players = d.players; if (d.matches) S.matches = d.matches; } catch(e) {} }
 
-function debouncedSave() {
-  saveLocal();
-  clearTimeout(syncTimeout);
-  syncTimeout = setTimeout(cloudSave, 1500);
+// ── Helpers ──
+function parseScore(s) { if (!s) return null; const m = s.match(/(\d+)\s*[-–—]\s*(\d+)/); return m ? { us: +m[1], them: +m[2] } : null; }
+function getResult(m) {
+  const u = parseInt(m.scoreUs), t = parseInt(m.scoreThem);
+  if (isNaN(u) || isNaN(t) || m.scoreUs === "" || m.scoreThem === "") return null;
+  return u > t ? "W" : u === t ? "D" : "L";
+}
+function leagueRecord() {
+  let W=0,D=0,L=0,GF=0,GA=0;
+  S.matches.forEach(m => {
+    const u = parseInt(m.scoreUs), t = parseInt(m.scoreThem);
+    if (isNaN(u) || isNaN(t) || !m.opponent) return;
+    GF += u; GA += t;
+    if (u > t) W++; else if (u === t) D++; else L++;
+  });
+  return { W, D, L, GF, GA, GD: GF - GA, played: W+D+L, pts: W*3+D };
+}
+function goalStats() { return S.players.map((p,i) => ({ name: p, goals: S.matches.reduce((s,m) => s + (m.scorers[i]?.goals||0), 0) })).sort((a,b) => b.goals - a.goals); }
+function gkStats() { const c = Object.fromEntries(S.players.map(p=>[p,0])); S.matches.forEach(m => m.goalkeepers.forEach(g => { if (g && c[g]!==undefined) c[g]++; })); return S.players.map(p => ({ name: p, times: c[p] })).sort((a,b) => b.times - a.times); }
+function esc(s) { return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+// ── Actions ──
+function setState(p) { Object.assign(S, p); debounceSave(); render(); }
+function addMatch() { S.matches.push(emptyMatch(S.players)); setState({ mi: S.matches.length - 1, tab: "matches" }); }
+function updMatch(f, v) { S.matches[S.mi][f] = v; setState({}); }
+function toggleAvail(i) { S.matches[S.mi].available[i].present = !S.matches[S.mi].available[i].present; setState({}); }
+function setGK(slot, v) { S.matches[S.mi].goalkeepers[slot] = v; setState({}); }
+function setGoals(i, d) { S.matches[S.mi].scorers[i].goals = Math.max(0, S.matches[S.mi].scorers[i].goals + d); setState({}); }
+function renamePlayer(i, name) {
+  const t = name.trim() || S.players[i], old = S.players[i];
+  S.players[i] = t;
+  S.matches.forEach(m => { if(m.available[i]) m.available[i].name = t; m.goalkeepers = m.goalkeepers.map(g => g===old?t:g); if(m.scorers[i]) m.scorers[i].name = t; });
+  setState({ editP: -1 });
 }
 
-// ── Local storage ─────────────────────────────────────────────
-function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify({players:state.players,matches:state.matches})); } catch(e){} }
-function loadLocal() { try { const d=JSON.parse(localStorage.getItem(LOCAL_KEY)||"{}"); if(d.players) state.players=d.players; if(d.matches) state.matches=d.matches; } catch(e){} }
-
-// ── State ─────────────────────────────────────────────────────
-function setState(patch) { Object.assign(state,patch); debouncedSave(); render(); }
-function goalStats() { return state.players.map((p,i)=>({name:p,goals:state.matches.reduce((s,m)=>s+(m.scorers[i]?.goals||0),0)})).sort((a,b)=>b.goals-a.goals); }
-function gkStats() { const c=Object.fromEntries(state.players.map(p=>[p,0])); state.matches.forEach(m=>m.goalkeepers.forEach(g=>{if(g&&c[g]!==undefined)c[g]++;})); return state.players.map(p=>({name:p,times:c[p]})).sort((a,b)=>b.times-a.times); }
-function addMatch() { const nm=emptyMatch(state.players); state.matches.push(nm); setState({activeMatch:state.matches.length-1,activeTab:"matches"}); }
-function updateMatch(field,val) { state.matches[state.activeMatch][field]=val; setState({}); }
-function toggleAvail(pi) { state.matches[state.activeMatch].available[pi].present=!state.matches[state.activeMatch].available[pi].present; setState({}); }
-function setGK(slot,val) { state.matches[state.activeMatch].goalkeepers[slot]=val; setState({}); }
-function setGoals(pi,delta) { const s=state.matches[state.activeMatch].scorers[pi]; s.goals=Math.max(0,s.goals+delta); setState({}); }
-function renamePlayer(i,name) {
-  const t=name.trim()||state.players[i], old=state.players[i];
-  state.players[i]=t;
-  state.matches.forEach(m=>{ if(m.available[i]) m.available[i].name=t; m.goalkeepers=m.goalkeepers.map(g=>g===old?t:g); if(m.scorers[i]) m.scorers[i].name=t; });
-  setState({editingPlayer:-1});
-}
-
-// ── Export / Backup ───────────────────────────────────────────
+// ── Export ──
 function exportCSV() {
-  const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=[["MATCH SUMMARY"],["Match","Opponent","Score","Notes","Available","Goalkeepers","Goals"]];
-  state.matches.forEach((m,i)=>rows.push([`Match ${i+1}`,m.opponent||"—",m.score||"—",esc(m.notes||""),m.available.filter(p=>p.present).map(p=>p.name).join("; ")||"—",m.goalkeepers.filter(Boolean).join("; ")||"—",m.scorers.reduce((s,p)=>s+p.goals,0)]));
-  rows.push([],["GOAL SCORERS"],["Player",...state.matches.map((m,i)=>m.opponent?`vs ${m.opponent}`:`Match ${i+1}`),"TOTAL"]);
-  state.players.forEach((p,pi)=>{ const mg=state.matches.map(m=>m.scorers[pi]?.goals||0); rows.push([p,...mg,mg.reduce((a,b)=>a+b,0)]); });
-  rows.push([],["GOALKEEPER APPEARANCES"],["Player",...state.matches.map((m,i)=>m.opponent?`vs ${m.opponent}`:`Match ${i+1}`),"TOTAL"]);
-  state.players.forEach(p=>{ const a=state.matches.map(m=>m.goalkeepers.includes(p)?1:0); rows.push([p,...a,a.reduce((x,y)=>x+y,0)]); });
+  const e = v => '"' + String(v??"").replace(/"/g,'""') + '"';
+  const rows = [["MATCH SUMMARY"],["Match","Opponent","Score","Result","Notes","Available","Goalkeepers","Goals"]];
+  S.matches.forEach((m,i) => {
+    const score = (m.scoreUs !== "" && m.scoreThem !== "") ? m.scoreUs + " – " + m.scoreThem : "—";
+    rows.push([`Match ${i+1}`, m.opponent||"—", score, getResult(m)||"—", e(m.notes||""),
+      m.available.filter(p=>p.present).map(p=>p.name).join("; ")||"—",
+      m.goalkeepers.filter(Boolean).join("; ")||"—",
+      m.scorers.reduce((s,p)=>s+p.goals,0)]);
+  });
+  rows.push([],["GOAL SCORERS"],["Player",...S.matches.map((m,i)=>m.opponent?`vs ${m.opponent}`:`Match ${i+1}`),"TOTAL"]);
+  S.players.forEach((p,pi) => { const mg = S.matches.map(m=>m.scorers[pi]?.goals||0); rows.push([p,...mg,mg.reduce((a,b)=>a+b,0)]); });
+  rows.push([],["GOALKEEPER APPEARANCES"],["Player",...S.matches.map((m,i)=>m.opponent?`vs ${m.opponent}`:`Match ${i+1}`),"TOTAL"]);
+  S.players.forEach(p => { const a = S.matches.map(m=>m.goalkeepers.includes(p)?1:0); rows.push([p,...a,a.reduce((x,y)=>x+y,0)]); });
   dl(new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv;charset=utf-8;"}),"hillyfielders_season.csv");
 }
-function backupData() { dl(new Blob([JSON.stringify({players:state.players,matches:state.matches},null,2)],{type:"application/json"}),"hillyfielders_backup.json"); }
-function dl(blob,name) { const url=URL.createObjectURL(blob),a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
+function backupData() { dl(new Blob([JSON.stringify({players:S.players,matches:S.matches},null,2)],{type:"application/json"}),"hillyfielders_backup.json"); }
+function dl(blob, name) { const url=URL.createObjectURL(blob),a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
 function restoreData(file) {
-  const r=new FileReader();
-  r.onload=ev=>{ try{ const d=JSON.parse(ev.target.result); state.players=d.players; state.matches=d.matches; state.activeMatch=0; state.toast="ok"; debouncedSave(); render(); setTimeout(()=>setState({toast:""}),3000); }catch{ setState({toast:"err"}); setTimeout(()=>setState({toast:""}),3000); } };
+  const r = new FileReader();
+  r.onload = ev => { try { const d=JSON.parse(ev.target.result); S.players=d.players; S.matches=d.matches; S.mi=0; S.toast="ok"; debounceSave(); render(); setTimeout(()=>setState({toast:""}),3000); } catch { setState({toast:"err"}); setTimeout(()=>setState({toast:""}),3000); } };
   r.readAsText(file);
 }
 
-// ── HTML ──────────────────────────────────────────────────────
-function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+// ── Render ──
+function render() { document.getElementById("root").innerHTML = html(); bind(); charts(); }
 
 function syncBadge() {
-  if(state.syncStatus==="ok") return `<span class="sync-badge ok">☁️ Synced</span>`;
-  if(state.syncStatus==="err") return `<span class="sync-badge err">⚠️ Offline</span>`;
-  return `<span class="sync-badge syncing"><span class="spinner"></span> Saving…</span>`;
+  if (S.sync==="ok") return '<span class="sync-pill sync-ok">☁️ Synced</span>';
+  if (S.sync==="err") return '<span class="sync-pill sync-err">⚠️ Offline</span>';
+  return '<span class="sync-pill sync-ing"><span class="spinner"></span>Saving…</span>';
 }
 
-function render() {
-  document.getElementById("app").innerHTML = buildHTML();
-  bindEvents(); renderCharts();
-}
-
-function buildHTML() {
-  const m=state.matches[state.activeMatch];
-  const gs=goalStats(), gks=gkStats();
-  const totalGoals=gs.reduce((s,p)=>s+p.goals,0);
-  const matchCount=state.matches.filter(x=>x.opponent).length;
-  const navItems=[{id:"matches",icon:"📋",label:"Matches"},{id:"stats",icon:"📊",label:"Stats"},{id:"squad",icon:"👥",label:"Squad"},{id:"data",icon:"💾",label:"Data"}];
+function html() {
+  const m = S.matches[S.mi];
+  const gs = goalStats(), gks = gkStats();
+  const rec = leagueRecord();
+  const tabs = [{id:"matches",l:"📋 Matches"},{id:"stats",l:"📊 Stats"},{id:"squad",l:"👥 Squad"},{id:"data",l:"💾 Data"}];
   return `
-<div class="header">
-  <div class="header-title">Hillyfielders FC</div>
-  <div class="header-sub">Season Tracker</div>
-  <div class="header-badges">
-    <span class="badge">🏟 ${matchCount} matches</span>
-    <span class="badge">⚽ ${totalGoals} goals</span>
-    ${syncBadge()}
-    <button class="btn-csv" onclick="exportCSV()">⬇️ CSV</button>
+<header class="hdr">
+  <div class="logo">
+    <span style="font-size:28px">⚽</span>
+    <div><div class="logo-name">Hillyfielders Harriers</div><div class="logo-sub">Season Tracker</div></div>
+  </div>
+  <div class="hdr-right">${syncBadge()}<button class="btn-hdr" onclick="exportCSV()">⬇️ Export CSV</button></div>
+</header>
+<nav class="nav">
+  ${tabs.map(t=>`<div class="nav-tab${S.tab===t.id?" active":""}" onclick="setState({tab:'${t.id}'})">${t.l}</div>`).join("")}
+</nav>
+<main class="page">
+  ${S.tab==="matches" ? tabMatches(m) : ""}
+  ${S.tab==="stats"   ? tabStats(gs,gks,rec) : ""}
+  ${S.tab==="squad"   ? tabSquad() : ""}
+  ${S.tab==="data"    ? tabData() : ""}
+</main>`;
+}
+
+function tabMatches(m) {
+  const res = getResult(m);
+  const resHtml = res
+    ? `<span class="sb-result ${res}">${res==="W"?"✅ Win":res==="D"?"🤝 Draw":"❌ Loss"}</span>`
+    : `<span class="sb-result none">Enter scores to see result</span>`;
+  const usVal = m.scoreUs !== "" ? m.scoreUs : "";
+  const themVal = m.scoreThem !== "" ? m.scoreThem : "";
+  return `
+<div class="pills">
+  ${S.matches.map((x,i)=>`<button class="pill${S.mi===i?" active":""}" onclick="setState({mi:${i}})">${x.opponent?`vs ${esc(x.opponent)}`:`Match ${i+1}`}</button>`).join("")}
+  <button class="pill add" onclick="addMatch()">＋ New Match</button>
+</div>
+
+<div class="scoreboard">
+  <div class="sb-team">
+    <span class="sb-label">🟢 Us</span>
+    <div class="sb-name" style="opacity:.55;font-size:16px;padding:12px 16px">Hillyfielders Harriers</div>
+  </div>
+  <div class="sb-center">
+    <div class="sb-scores">
+      <input id="sb-us" class="sb-score" type="number" min="0" max="99" value="${esc(usVal)}" placeholder="0"
+        onblur="updMatch('scoreUs', this.value); updMatch('scoreThem', document.getElementById('sb-them').value)"/>
+      <span class="sb-sep">–</span>
+      <input id="sb-them" class="sb-score" type="number" min="0" max="99" value="${esc(themVal)}" placeholder="0"
+        onblur="updMatch('scoreThem', this.value); updMatch('scoreUs', document.getElementById('sb-us').value)"/>
+    </div>
+    ${resHtml}
+  </div>
+  <div class="sb-team away">
+    <span class="sb-label">Opponent 🔴</span>
+    <input class="sb-name away" type="text" value="${esc(m.opponent)}" placeholder="Opponent name" onblur="updMatch('opponent',this.value)"/>
   </div>
 </div>
-<div class="content">
-${state.activeTab==="matches"?buildMatches(m):""}
-${state.activeTab==="stats"?buildStats(gs,gks,totalGoals,matchCount):""}
-${state.activeTab==="squad"?buildSquad():""}
-${state.activeTab==="data"?buildData():""}
-</div>
-<nav class="bottom-nav">
-${navItems.map(n=>`<div class="nav-item${state.activeTab===n.id?" active":""}" onclick="setState({activeTab:'${n.id}'})"><span class="nav-icon">${n.icon}</span><span class="nav-label" style="${state.activeTab===n.id?"color:var(--accent)":""}">${n.label}</span></div>`).join("")}
-</nav>`;
+
+<div class="card"><div class="card-body">
+  <div class="card-title">✅ Player Availability</div>
+  <div class="avail-note">${m.available.filter(p=>p.present).length} of ${S.players.length} players available</div>
+  <div class="avail-grid">${m.available.map((p,i)=>`<button class="avail-btn${p.present?" on":""}" onclick="toggleAvail(${i})"><span style="font-size:17px">${p.present?"✅":"⬜"}</span>${esc(p.name)}</button>`).join("")}</div>
+</div></div>
+
+<div class="card"><div class="card-body">
+  <div class="card-title">🧤 Goalkeepers This Week</div>
+  <div class="g2">${[0,1].map(s=>`<div class="field" style="margin:0"><label class="flabel">Goalkeeper ${s+1}</label><select onchange="setGK(${s},this.value)"><option value="">— Not selected —</option>${S.players.map(p=>`<option value="${esc(p)}"${m.goalkeepers[s]===p?" selected":""}>${esc(p)}</option>`).join("")}</select></div>`).join("")}</div>
+</div></div>
+
+<div class="card"><div class="card-body">
+  <div class="card-title">⚽ Goal Scorers</div>
+  <div class="scorer-grid">${m.scorers.map((s,i)=>`<div class="scorer-row${s.goals>0?" on":""}"><button class="cbtn" onclick="setGoals(${i},-1)">−</button><span class="gcount">${s.goals}</span><button class="cbtn" onclick="setGoals(${i},1)">+</button><span class="scorer-name">${esc(s.name)}</span></div>`).join("")}</div>
+</div></div>
+
+<div class="card"><div class="card-body">
+  <div class="card-title">📝 Match Notes</div>
+  <div class="field" style="margin:0"><textarea placeholder="How did the game go? Key moments, standout performances, weather…" onblur="updMatch('notes',this.value)">${esc(m.notes)}</textarea></div>
+</div></div>`;
 }
 
-function buildMatches(m) {
+function tabStats(gs, gks, rec) {
+  const played = S.matches.filter(m => m.opponent && m.scoreUs !== "" && m.scoreThem !== "");
   return `
-<div class="match-pills">
-  ${state.matches.map((x,i)=>`<button class="pill${state.activeMatch===i?" active":""}" onclick="setState({activeMatch:${i}})">${x.opponent?`vs ${esc(x.opponent)}`:`Match ${i+1}`}</button>`).join("")}
-  <button class="pill add" onclick="addMatch()">＋ New</button>
-</div>
-<div class="section-title">🏟 Match Details</div>
 <div class="card"><div class="card-body">
-  <div class="field"><label class="field-label">Opponent</label><input type="text" value="${esc(m.opponent)}" placeholder="e.g. Sunday Rovers" onblur="updateMatch('opponent',this.value)"/></div>
-  <div class="field"><label class="field-label">Final Score (us – them)</label><input type="text" value="${esc(m.score)}" placeholder="e.g. 3 – 1" onblur="updateMatch('score',this.value)"/></div>
-  <div class="field"><label class="field-label">Match Notes</label><textarea onblur="updateMatch('notes',this.value)">${esc(m.notes)}</textarea></div>
+  <div class="card-title">🏆 Season Record</div>
+  <div class="stat-wrap">
+    <div class="sc dark"><div class="sc-icon">🎮</div><div class="sc-val">${rec.played}</div><div class="sc-lbl">Played</div></div>
+    <div class="sc dark"><div class="sc-icon">✅</div><div class="sc-val">${rec.W}</div><div class="sc-lbl">Won</div></div>
+    <div class="sc dark"><div class="sc-icon">🤝</div><div class="sc-val">${rec.D}</div><div class="sc-lbl">Drawn</div></div>
+    <div class="sc dark"><div class="sc-icon">❌</div><div class="sc-val">${rec.L}</div><div class="sc-lbl">Lost</div></div>
+    <div class="sc"><div class="sc-icon">⚽</div><div class="sc-val">${rec.GF}</div><div class="sc-lbl">Goals For</div></div>
+    <div class="sc"><div class="sc-icon">🚨</div><div class="sc-val">${rec.GA}</div><div class="sc-lbl">Goals Against</div></div>
+    <div class="sc"><div class="sc-icon">${rec.GD>=0?"📈":"📉"}</div><div class="sc-val">${rec.GD>0?"+":""}${rec.GD}</div><div class="sc-lbl">Goal Diff</div></div>
+    <div class="sc dark"><div class="sc-icon">🏅</div><div class="sc-val">${rec.pts}</div><div class="sc-lbl">Points</div></div>
+  </div>
+  ${played.length===0
+    ? `<p class="nodata">Enter opponent names and scores on the Match Sheet to see your record here.</p>`
+    : `<table class="ltable"><thead><tr><th>#</th><th>Match</th><th>Score</th><th class="c">Result</th></tr></thead><tbody>
+      ${played.map((m,i)=>{const res=getResult(m);return `<tr><td style="color:var(--g4);font-weight:700">${i+1}</td><td style="font-weight:700">vs ${esc(m.opponent)}</td><td style="font-weight:900;font-size:16px">${m.scoreUs} – ${m.scoreThem}</td><td class="c"><span class="rbadge ${res}">${res}</span></td></tr>`;}).join("")}
+      </tbody></table>`}
 </div></div>
-<div class="section-title">✅ Availability</div>
+
 <div class="card"><div class="card-body">
-  <div class="avail-count">${m.available.filter(p=>p.present).length} of ${state.players.length} available</div>
-  <div class="avail-grid">${m.available.map((p,i)=>`<button class="avail-btn${p.present?" on":""}" onclick="toggleAvail(${i})"><span style="font-size:20px">${p.present?"✅":"⬜"}</span>${esc(p.name)}</button>`).join("")}</div>
+  <div class="card-title">⚽ Top Scorers — All Time</div>
+  ${gs.every(p=>p.goals===0)
+    ? `<p class="nodata">No goals recorded yet.</p>`
+    : `<canvas id="goalChart" height="180"></canvas>
+      <table class="dtable"><thead><tr><th>#</th><th>Player</th><th>Goals</th></tr></thead><tbody>
+      ${gs.map((p,i)=>`<tr><td style="color:var(--g4);font-weight:700">${i+1}</td><td><span class="dot" style="background:${GRAYS[i%GRAYS.length]}"></span>${esc(p.name)}</td><td style="font-weight:900;font-size:17px">${p.goals}</td></tr>`).join("")}
+      </tbody></table>`}
 </div></div>
-<div class="section-title">🧤 Goalkeepers</div>
+
 <div class="card"><div class="card-body">
-  <div class="gk-grid">${[0,1].map(slot=>`<div class="field" style="margin:0"><label class="field-label">GK ${slot+1}</label><select onchange="setGK(${slot},this.value)"><option value="">— Not set —</option>${state.players.map(p=>`<option value="${esc(p)}"${m.goalkeepers[slot]===p?" selected":""}>${esc(p)}</option>`).join("")}</select></div>`).join("")}</div>
-</div></div>
-<div class="section-title">⚽ Goal Scorers</div>
-<div class="card"><div class="card-body">
-  <div class="scorer-grid">${m.scorers.map((s,i)=>`<div class="scorer-row${s.goals>0?" has-goals":""}"><button class="counter-btn" onclick="setGoals(${i},-1)">−</button><span class="goal-count" style="color:${s.goals>0?"var(--accent)":"var(--text2)"}">${s.goals}</span><button class="counter-btn" onclick="setGoals(${i},1)">+</button><span class="scorer-name">${esc(s.name)}</span></div>`).join("")}</div>
+  <div class="card-title">🧤 Goalkeeper Appearances — All Time</div>
+  ${gks.every(p=>p.times===0)
+    ? `<p class="nodata">No goalkeeper data yet.</p>`
+    : `<canvas id="gkChart" height="180"></canvas>
+      <table class="dtable"><thead><tr><th>#</th><th>Player</th><th>Games in Goal</th></tr></thead><tbody>
+      ${gks.map((p,i)=>`<tr><td style="color:var(--g4);font-weight:700">${i+1}</td><td><span class="dot" style="background:${GRAYS[i%GRAYS.length]}"></span>${esc(p.name)}</td><td style="font-weight:900;font-size:17px">${p.times}</td></tr>`).join("")}
+      </tbody></table>`}
 </div></div>`;
 }
 
-function buildStats(gs,gks,totalGoals,matchCount) {
+function tabSquad() {
+  return `<div class="card"><div class="card-body">
+  <div class="card-title">👥 Squad</div>
+  <p style="font-size:14px;color:var(--g4);margin-bottom:20px">Click a name to rename. Changes apply across all matches.</p>
+  <div class="squad-grid">${S.players.map((p,i)=>`
+    <div class="squad-card">
+      <div class="squad-num">${i+1}</div>
+      ${S.editP===i
+        ? `<input type="text" id="ren-${i}" value="${esc(p)}" style="flex:1;padding:10px 12px;font-size:15px;border-radius:6px;border:2px solid var(--black);font-family:inherit" onblur="renamePlayer(${i},this.value)" onkeydown="if(event.key==='Enter')renamePlayer(${i},this.value);if(event.key==='Escape')setState({editP:-1})"/>`
+        : `<span class="squad-name" onclick="setState({editP:${i}})">${esc(p)} ✏️</span>`}
+    </div>`).join("")}
+  </div>
+</div></div>`;
+}
+
+function tabData() {
   return `
-<div class="section-title">📊 Season Stats</div>
-<div class="stat-row">
-  <div class="stat-card"><div class="stat-icon">🏟</div><div class="stat-val">${matchCount}</div><div class="stat-lbl">Played</div></div>
-  <div class="stat-card"><div class="stat-icon">⚽</div><div class="stat-val">${totalGoals}</div><div class="stat-lbl">Goals</div></div>
-  <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-val" style="font-size:13px;line-height:1.3">${esc(gs[0]?.goals>0?gs[0].name:"—")}</div><div class="stat-lbl">Top Scorer</div></div>
+<div class="dac-grid">
+  <div class="dac"><div class="dicon">📦</div><h4>Backup Data</h4><p>Download all your data as a local file. Keep it safe to restore on any device.</p><button class="btn-black" onclick="backupData()">⬇️ Download Backup</button></div>
+  <div class="dac"><div class="dicon">📂</div><h4>Restore Data</h4><p>Upload a previously saved backup file to restore your data.</p><label class="btn-outline">📂 Load Backup<input type="file" accept=".json" style="display:none" onchange="restoreData(this.files[0]);this.value=''"/></label></div>
 </div>
-<div class="section-title">⚽ Goals — All Time</div>
-<div class="card"><div class="card-body">
-  ${gs.every(p=>p.goals===0)?`<p class="no-data">No goals recorded yet.</p>`:`<canvas id="goalChart" height="180"></canvas><table><thead><tr><th>#</th><th>Player</th><th>Goals</th></tr></thead><tbody>${gs.map((p,i)=>`<tr><td style="color:var(--text2);font-weight:700">${i+1}</td><td><span class="dot" style="background:${COLORS[i%COLORS.length]}"></span>${esc(p.name)}</td><td style="font-weight:800;color:var(--accent)">${p.goals}</td></tr>`).join("")}</tbody></table>`}
-</div></div>
-<div class="section-title">🧤 Goalkeeper — All Time</div>
-<div class="card"><div class="card-body">
-  ${gks.every(p=>p.times===0)?`<p class="no-data">No GK data yet.</p>`:`<canvas id="gkChart" height="180"></canvas><table><thead><tr><th>#</th><th>Player</th><th>GK Games</th></tr></thead><tbody>${gks.map((p,i)=>`<tr><td style="color:var(--text2);font-weight:700">${i+1}</td><td><span class="dot" style="background:${COLORS[i%COLORS.length]}"></span>${esc(p.name)}</td><td style="font-weight:800;color:var(--accent2)">${p.times}</td></tr>`).join("")}</tbody></table>`}
-</div></div>`;
+${S.toast==="ok"?'<div class="toast ok">✅ Data restored successfully!</div>':""}
+${S.toast==="err"?'<div class="toast err">❌ Invalid backup file. Please try again.</div>':""}
+<div class="icard"><h4>☁️ Cloud Sync</h4><p>Your data saves automatically to the cloud every time you make a change. Open your URL on any device and the latest data loads instantly — no login needed.</p></div>
+<div class="icard"><h4>📱 Install as an App</h4><ol><li>Open your GitHub Pages URL in Safari on iPhone</li><li>Tap the Share button</li><li>Select <strong>Add to Home Screen</strong></li></ol></div>`;
 }
 
-function buildSquad() {
-  return `<div class="section-title">👥 Squad</div>
-<div class="card"><div class="card-body">
-  <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Tap a name to rename. Updates all matches.</p>
-  <div class="squad-grid">${state.players.map((p,i)=>`<div class="squad-card"><div class="squad-num" style="background:${COLORS[i%COLORS.length]}">${i+1}</div>${state.editingPlayer===i?`<input type="text" id="rename-${i}" value="${esc(p)}" style="flex:1;padding:10px 12px;font-size:15px" onblur="renamePlayer(${i},this.value)" onkeydown="if(event.key==='Enter')renamePlayer(${i},this.value);if(event.key==='Escape')setState({editingPlayer:-1})"/>`:`<span class="squad-name" onclick="setState({editingPlayer:${i}})">${esc(p)} ✏️</span>`}</div>`).join("")}</div>
-</div></div>`;
+function charts() {
+  if (S.tab !== "stats") return;
+  const gs = goalStats(), gks = gkStats();
+  const cfg = (labels, data) => ({ type:"bar", data:{ labels, datasets:[{ data, backgroundColor: labels.map((_,i)=>GRAYS[i%GRAYS.length]), borderRadius:6, borderSkipped:false }] }, options:{ plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,font:{size:12}},grid:{color:"rgba(0,0,0,0.05)"}}, x:{ticks:{font:{size:12}},grid:{display:false}} }, animation:{duration:400} } });
+  if (!gs.every(p=>p.goals===0)) { const c=document.getElementById("goalChart"); if(c){if(goalChart)goalChart.destroy(); goalChart=new Chart(c,cfg(gs.map(p=>p.name),gs.map(p=>p.goals)));} }
+  if (!gks.every(p=>p.times===0)) { const c=document.getElementById("gkChart"); if(c){if(gkChart)gkChart.destroy(); gkChart=new Chart(c,cfg(gks.map(p=>p.name),gks.map(p=>p.times)));} }
 }
 
-function buildData() {
-  return `<div class="section-title">💾 Your Data</div>
-<div class="data-grid">
-  <div class="data-card"><div class="big-icon">📦</div><h4>Backup</h4><p>Download all data to a local file.</p><button class="btn-primary" onclick="backupData()">⬇️ Download</button></div>
-  <div class="data-card"><div class="big-icon">📂</div><h4>Restore</h4><p>Load a backup to restore your data.</p><label class="btn-purple">📂 Load File<input type="file" accept=".json" style="display:none" onchange="restoreData(this.files[0]);this.value=''"/></label></div>
-</div>
-${state.toast==="ok"?`<div class="toast ok">✅ Data restored!</div>`:""}
-${state.toast==="err"?`<div class="toast err">❌ Invalid backup file.</div>`:""}
-<div class="info-card">
-  <h4>☁️ Cloud Sync</h4>
-  <p>Your data saves automatically to the cloud every time you make a change. Open your URL on any device and it'll load instantly. No login required.</p>
-</div>
-<div class="info-card">
-  <h4>📱 Add to Home Screen</h4>
-  <p>Open your GitHub URL in Safari → tap Share → <strong>Add to Home Screen</strong> for a true app feel.</p>
-</div>`;
+function bind() {
+  if (S.editP >= 0) { const el = document.getElementById("ren-" + S.editP); if(el){el.focus();el.select();} }
 }
 
-function renderCharts() {
-  if(state.activeTab!=="stats") return;
-  const gs=goalStats(), gks=gkStats();
-  const opts=(labels,data,colors)=>({type:"bar",data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:8,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:"rgba(0,0,0,0.06)"}},x:{ticks:{font:{size:11}},grid:{display:false}}},animation:{duration:600}}});
-  if(!gs.every(p=>p.goals===0)){const ctx=document.getElementById("goalChart");if(ctx){if(goalChart)goalChart.destroy();goalChart=new Chart(ctx,opts(gs.map(p=>p.name),gs.map(p=>p.goals),gs.map((_,i)=>COLORS[i%COLORS.length])));}}
-  if(!gks.every(p=>p.times===0)){const ctx2=document.getElementById("gkChart");if(ctx2){if(gkChart)gkChart.destroy();gkChart=new Chart(ctx2,opts(gks.map(p=>p.name),gks.map(p=>p.times),gks.map((_,i)=>COLORS[i%COLORS.length])));}}
-}
-
-function bindEvents() {
-  if(state.editingPlayer>=0){const el=document.getElementById(`rename-${state.editingPlayer}`);if(el){el.focus();el.select();}}
-}
-
-// ── Boot ──────────────────────────────────────────────────────
-loadLocal();
-render();
-cloudLoad();
+loadLocal(); render(); cloudLoad();
 </script>
 </body>
 </html>
